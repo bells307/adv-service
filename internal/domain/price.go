@@ -8,16 +8,21 @@ type (
 
 	// Цена
 	Price struct {
-		Value    float64  `json:"value" bson:"value"`
+		// Значение
+		Value float64 `json:"value" bson:"value"`
+		// Валюта
 		Currency Currency `json:"currency" bson:"currency"`
 	}
 )
 
 const (
+	// Рубль
 	RUB Currency = "rub"
+	// Доллар
 	USD Currency = "usd"
 )
 
+// Преобразование string => Currency
 func CurrencyFromString(str string) (Currency, error) {
 	if str == "rub" {
 		return RUB, nil

@@ -25,24 +25,24 @@ func (r *categoryMongoDBRepository) Collection() *mongo.Collection {
 	return r.client.Collection(CAT_COLLECTION_NAME)
 }
 
-func (r *categoryMongoDBRepository) CreateCategory(ctx context.Context, category *domain.Category) error {
+func (r *categoryMongoDBRepository) CreateCategory(ctx context.Context, category domain.Category) error {
 	_, err := r.Collection().InsertOne(ctx, category)
 	return err
 }
 
-func (r *categoryMongoDBRepository) GetByID(ctx context.Context, id string) (*domain.Category, error) {
+func (r *categoryMongoDBRepository) FindByID(ctx context.Context, id string) (domain.Category, error) {
 	res := r.Collection().FindOne(ctx, bson.M{"_id": id})
 	err := res.Err()
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
+			return domain.Category{}, domain.ErrCategoryNotFound
 		} else {
-			return nil, err
+			return domain.Category{}, err
 		}
 	}
 
 	var category domain.Category
 	res.Decode(&category)
 
-	return &category, nil
+	return category, nil
 }

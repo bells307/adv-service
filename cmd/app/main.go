@@ -5,7 +5,6 @@ import (
 
 	v1 "github.com/bells307/adv-service/internal/infrastructure/delivery/http/v1"
 	"github.com/bells307/adv-service/internal/infrastructure/repository"
-	"github.com/bells307/adv-service/internal/usecase"
 	"github.com/bells307/adv-service/pkg/mongodb"
 	"github.com/gin-gonic/gin"
 )
@@ -24,9 +23,12 @@ func main() {
 	}
 
 	advRepo := repository.NewAdvertismentMongoDBRepository(mongoClient)
-	advUsecase := usecase.NewAdvertismentUsecase(advRepo)
-	advHandler := v1.NewAdvertismentHandler(advUsecase)
+	advHandler := v1.NewAdvertismentHandler(advRepo)
 	advHandler.Register(router.Group("/api"))
+
+	catRepo := repository.NewCategoryMongoDBRepository(mongoClient)
+	catHandler := v1.NewCategoryHandler(catRepo)
+	catHandler.Register(router.Group("/api"))
 
 	router.Run("localhost:10000")
 }
