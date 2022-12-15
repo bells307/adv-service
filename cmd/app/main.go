@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	adv_repository "github.com/bells307/adv-service/internal/domain/advertisment/repository"
-	adv_service "github.com/bells307/adv-service/internal/domain/advertisment/service"
-	adv_handler "github.com/bells307/adv-service/internal/handler/advertisment/v1"
+	v1 "github.com/bells307/adv-service/internal/infrastructure/delivery/http/v1"
+	"github.com/bells307/adv-service/internal/infrastructure/repository"
+	"github.com/bells307/adv-service/internal/usecase"
 	"github.com/bells307/adv-service/pkg/mongodb"
 	"github.com/gin-gonic/gin"
 )
@@ -23,9 +23,9 @@ func main() {
 		log.Fatalf("can't connect to MongoDB: %v", err)
 	}
 
-	advRepo := adv_repository.NewAdvertismentMongoDBRepository(mongoClient)
-	advService := adv_service.NewAdvertismentService(advRepo)
-	advHandler := adv_handler.NewAdvertismentHandler(advService)
+	advRepo := repository.NewAdvertismentMongoDBRepository(mongoClient)
+	advUsecase := usecase.NewAdvertismentUsecase(advRepo)
+	advHandler := v1.NewAdvertismentHandler(advUsecase)
 	advHandler.Register(router.Group("/api"))
 
 	router.Run("localhost:10000")

@@ -1,4 +1,4 @@
-package advertisment_handler
+package v1
 
 import (
 	"errors"
@@ -7,22 +7,22 @@ import (
 	"net/url"
 	"strconv"
 
-	adv_service "github.com/bells307/adv-service/internal/domain/advertisment/service"
-	adv_dto "github.com/bells307/adv-service/internal/domain/advertisment/service/dto"
-	adv_err "github.com/bells307/adv-service/internal/domain/advertisment/service/error"
+	"github.com/bells307/adv-service/internal/domain"
+	"github.com/bells307/adv-service/internal/usecase"
+	"github.com/bells307/adv-service/pkg/gin/err_resp"
 	"github.com/gin-gonic/gin"
 )
 
 type advertismentHandler struct {
-	advService *adv_service.AdvertismentService
+	advUsecase *usecase.AdvertismentUsecase
 }
 
 // Количество элементов на одной странице объявлений
 // TODO: в конфигурацию
 const PAGE_ELEMENT_COUNT = 10
 
-func NewAdvertismentHandler(advService *adv_service.AdvertismentService) *advertismentHandler {
-	return &advertismentHandler{advService}
+func NewAdvertismentHandler(advUsecase *usecase.AdvertismentUsecase) *advertismentHandler {
+	return &advertismentHandler{advUsecase}
 }
 
 // Зарегистрировать роуты
@@ -42,12 +42,12 @@ func (h *advertismentHandler) Register(g *gin.RouterGroup) {
 func (h *advertismentHandler) getAdvertisment(c *gin.Context) {
 	// Получаем объявление из сервиса
 	id := c.Param("id")
-	adv, err := h.advService.GetOne(c.Request.Context(), id)
+	adv, err := h.advUsecase.GetOne(c.Request.Context(), id)
 	if err != nil {
-		if errors.Is(err, adv_err.ErrNotFound) {
+		if errors.Is(err, domain.ErrAdvNotFound) {
 			c.AbortWithStatus(http.StatusNotFound)
 		} else {
-			ErrorResponse(c, err)
+			err_resp.ErrorResponse(c, err)
 		}
 		return
 	}
@@ -97,13 +97,13 @@ func (h *advertismentHandler) getAdvertismentMany(c *gin.Context) {
 	page, ok := c.Request.URL.Query()["page"]
 	if ok {
 		if len(page) > 1 {
-			ErrorResponse(c, errors.New("page query field can't contain more than one value"))
+			err_resp.ErrorResponse(c, errors.New("page query field can't contain more than one value"))
 			return
 		}
 
 		pageNum, err := strconv.Atoi(page[0])
 		if err != nil {
-			ErrorResponse(c, fmt.Errorf("can't parse page query field: %v", err))
+			err_resp.ErrorResponse(c, fmt.Errorf("can't parse page query field: %v", err))
 			return
 		}
 
@@ -111,14 +111,14 @@ func (h *advertismentHandler) getAdvertismentMany(c *gin.Context) {
 		offset = limit * (pageNum - 1)
 	}
 
-	dto := adv_dto.GetAdvertisments{
+	dto := usecase.GetAdvertisments{
 		Limit:  int64(limit),
 		Offset: int64(offset),
 	}
 
-	advs, err := h.advService.Get(c.Request.Context(), &dto)
+	advs, err := h.advUsecase.Get(c.Request.Context(), &dto)
 	if err != nil {
-		ErrorResponse(c, err)
+		err_resp.ErrorResponse(c, err)
 		return
 	}
 
@@ -136,15 +136,15 @@ func (h *advertismentHandler) getAdvertismentMany(c *gin.Context) {
 
 // Создать объявление
 func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
-	var createAdvertisment adv_dto.CreateAdvertisment
+	var createAdvertisment usecase.CreateAdvertisment
 	if err := c.Bind(&createAdvertisment); err != nil {
 		return
 	}
 
 	// Создаем объявление
-	adv, err := h.advService.Create(c.Request.Context(), &createAdvertisment)
+	adv, err := h.advUsecase.Create(c.Request.Context(), &createAdvertisment)
 	if err != nil {
-		ErrorResponse(c, err)
+		err_resp.ErrorResponse(c, err)
 		return
 	}
 

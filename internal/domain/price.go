@@ -1,9 +1,17 @@
-package model
+package domain
 
 import "fmt"
 
-// Валюта
-type Currency string
+type (
+	// Валюта
+	Currency string
+
+	// Цена
+	Price struct {
+		Value    float64  `json:"value" bson:"value"`
+		Currency Currency `json:"currency" bson:"currency"`
+	}
+)
 
 const (
 	RUB Currency = "rub"
@@ -18,10 +26,4 @@ func CurrencyFromString(str string) (Currency, error) {
 	} else {
 		return Currency(""), fmt.Errorf("currency %s not found", str)
 	}
-}
-
-// Цена
-type Price struct {
-	Value    float64  `json:"value" bson:"value"`
-	Currency Currency `json:"currency" bson:"currency"`
 }
