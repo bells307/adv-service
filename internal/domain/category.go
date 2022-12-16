@@ -14,6 +14,8 @@ type (
 		CreateCategory(context.Context, Category) error
 		// Получить по ID
 		FindByID(context.Context, string) (Category, error)
+		// Получить все
+		FindAllByID(ctx context.Context, ids []string) ([]Category, error)
 	}
 
 	// Категория объявления

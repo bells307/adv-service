@@ -64,9 +64,12 @@ type (
 		AdditionalPhotoURLs []string
 	}
 
+	// Краткая информация об объявлении
 	AdvertismentSummary struct {
 		// Имя
 		Name string
+		// Категория
+		Category Category
 		// Цена
 		Price Price
 		// Ссылка на главное изображение
@@ -76,11 +79,3 @@ type (
 	// Номер страницы объявлений
 	AdvertismentPageNumber uint
 )
-
-func (a Advertisment) Summary() AdvertismentSummary {
-	return AdvertismentSummary{
-		Name:         a.Name,
-		Price:        a.Price,
-		MainPhotoURL: a.MainPhotoURL,
-	}
-}

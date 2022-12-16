@@ -14,11 +14,12 @@ import (
 )
 
 type advertismentHandler struct {
-	repo domain.AdvertismentRepository
+	advRepo domain.AdvertismentRepository
+	catRepo domain.CategoryRepository
 }
 
-func NewAdvertismentHandler(repo domain.AdvertismentRepository) *advertismentHandler {
-	return &advertismentHandler{repo}
+func NewAdvertismentHandler(advRepo domain.AdvertismentRepository, catRepo domain.CategoryRepository) *advertismentHandler {
+	return &advertismentHandler{advRepo, catRepo}
 }
 
 // Зарегистрировать роуты
@@ -38,7 +39,7 @@ func (h *advertismentHandler) Register(g *gin.RouterGroup) {
 func (h *advertismentHandler) getAdvertisment(c *gin.Context) {
 	id := c.Param("id")
 
-	uc := usecase.NewFindAdvertismentInteractor(h.repo, presenter.NewFindAdvertismentPresenter())
+	uc := usecase.NewFindAdvertismentInteractor(h.advRepo, presenter.NewFindAdvertismentPresenter())
 	out, err := uc.Execute(c.Request.Context(), usecase.FindAdvertismentInput{
 		ID: id,
 	})
@@ -69,8 +70,13 @@ func (h *advertismentHandler) getAdvertismentSummary(c *gin.Context) {
 		page = nil
 	}
 
-	uc := usecase.NewFindAllAdvertismentSummaryByPageInteractor(h.repo, presenter.NewFindAllAdvertismentSummaryByPage())
-	out, err := uc.Execute(c.Request.Context(), usecase.FindAllAdvertismentSummaryByPageInput{
+	uc := usecase.NewFindAllAdvertismentSummaryInteractor(
+		h.advRepo,
+		h.catRepo,
+		presenter.NewFindAllAdvertismentSummaryPresenter(),
+	)
+
+	out, err := uc.Execute(c.Request.Context(), usecase.FindAllAdvertismentSummaryInput{
 		Page: page,
 	})
 
@@ -89,7 +95,7 @@ func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 		return
 	}
 
-	uc := usecase.NewCreateAdvertismentInteractor(h.repo, presenter.NewCreateAdvertismentPresenter())
+	uc := usecase.NewCreateAdvertismentInteractor(h.advRepo, presenter.NewCreateAdvertismentPresenter())
 	out, err := uc.Execute(c.Request.Context(), input)
 	if err != nil {
 		err_resp.ErrorResponse(c, err)

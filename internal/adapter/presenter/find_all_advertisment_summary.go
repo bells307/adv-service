@@ -5,22 +5,24 @@ import (
 	usecase "github.com/bells307/adv-service/internal/usecase"
 )
 
-type findAllAdvertismentSummaryByPagePresenter struct{}
+type findAllAdvertismentSummaryPresenter struct{}
 
-func NewFindAllAdvertismentSummaryByPage() usecase.FindAllAdvertismentSummaryByPagePresenter {
-	return findAllAdvertismentSummaryByPagePresenter{}
+func NewFindAllAdvertismentSummaryPresenter() usecase.FindAllAdvertismentSummaryPresenter {
+	return findAllAdvertismentSummaryPresenter{}
 }
 
-func (p findAllAdvertismentSummaryByPagePresenter) Output(summary []domain.AdvertismentSummary) usecase.FindAllAdvertismentSummaryByPageOutput {
-	out := make(usecase.FindAllAdvertismentSummaryByPageOutput, 0)
+func (p findAllAdvertismentSummaryPresenter) Output(summary []domain.AdvertismentSummary) usecase.FindAllAdvertismentSummaryOutput {
+	out := make(usecase.FindAllAdvertismentSummaryOutput, 0)
 
 	for _, sum := range summary {
 		val := struct {
 			Name         string       `json:"name"`
+			Category     string       `json:"category"`
 			Price        domain.Price `json:"price"`
 			MainPhotoURL string       `json:"mainPhotoURL"`
 		}{
 			Name:         sum.Name,
+			Category:     sum.Category.Name,
 			Price:        sum.Price,
 			MainPhotoURL: sum.MainPhotoURL,
 		}

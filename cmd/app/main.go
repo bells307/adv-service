@@ -23,10 +23,11 @@ func main() {
 	}
 
 	advRepo := repository.NewAdvertismentMongoDBRepository(mongoClient)
-	advHandler := v1.NewAdvertismentHandler(advRepo)
+	catRepo := repository.NewCategoryMongoDBRepository(mongoClient)
+
+	advHandler := v1.NewAdvertismentHandler(advRepo, catRepo)
 	advHandler.Register(router.Group("/api"))
 
-	catRepo := repository.NewCategoryMongoDBRepository(mongoClient)
 	catHandler := v1.NewCategoryHandler(catRepo)
 	catHandler.Register(router.Group("/api"))
 
