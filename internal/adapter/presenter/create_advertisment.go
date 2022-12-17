@@ -15,7 +15,7 @@ func (p createAdvertismentPresenter) Output(adv domain.Advertisment) usecase.Cre
 	return usecase.CreateAdvertismentOutput{
 		ID:                  adv.ID,
 		Name:                adv.Name,
-		CategoryID:          adv.CategoryID,
+		Category:            adv.Category.Name,
 		Description:         adv.Description,
 		Price:               adv.Price,
 		MainPhotoURL:        adv.MainPhotoURL,

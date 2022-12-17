@@ -30,7 +30,7 @@ type (
 		// Имя
 		Name string `json:"name"`
 		// ID категории
-		CategoryID string `json:"categoryID"`
+		Category string `json:"category"`
 		// Описание
 		Description string `json:"description"`
 		// Цена

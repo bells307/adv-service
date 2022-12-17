@@ -42,7 +42,7 @@ type (
 		// Имя
 		Name string `json:"name"`
 		// ID категории
-		CategoryID string `json:"categoryID"`
+		Category string `json:"category"`
 		// Описание
 		Description string `json:"description"`
 		// Цена
@@ -54,46 +54,45 @@ type (
 	}
 
 	createAdvertismentInteractor struct {
-		repo      domain.AdvertismentRepository
+		advRepo   domain.AdvertismentRepository
+		catRepo   domain.CategoryRepository
 		presenter CreateAdvertismentPresenter
 	}
 )
 
 func NewCreateAdvertismentInteractor(
-	repo domain.AdvertismentRepository,
+	advRepo domain.AdvertismentRepository,
+	catRepo domain.CategoryRepository,
 	presenter CreateAdvertismentPresenter,
 ) CreateAdvertismentUseCase {
 	return createAdvertismentInteractor{
-		repo,
+		advRepo,
+		catRepo,
 		presenter,
 	}
 }
 
 func (i createAdvertismentInteractor) Execute(ctx context.Context, input CreateAdvertismentInput) (CreateAdvertismentOutput, error) {
-	// Валидация полей
-	if len(input.Name) > domain.MAX_NAME_LENGTH {
-		return CreateAdvertismentOutput{}, domain.ErrAdvMaxNameLength
-	}
-
-	if len(input.Description) > domain.MAX_DESC_LENGTH {
-		return CreateAdvertismentOutput{}, domain.ErrAdvMaxDescLength
-	}
-
-	if len(input.AdditionalPhotoURLs) > domain.MAX_PHOTO_COUNT {
-		return CreateAdvertismentOutput{}, domain.ErrAdvMaxPhotoCount
+	cat, err := i.catRepo.FindByID(ctx, input.CategoryID)
+	if err != nil {
+		return CreateAdvertismentOutput{}, fmt.Errorf("can't find category %s: %v", input.CategoryID, err)
 	}
 
 	adv := domain.Advertisment{
 		ID:                  uuid.NewString(),
 		Name:                input.Name,
-		CategoryID:          input.CategoryID,
+		Category:            cat,
 		Description:         input.Description,
 		Price:               input.Price,
 		MainPhotoURL:        input.MainPhotoURL,
 		AdditionalPhotoURLs: input.AdditionalPhotoURLs,
 	}
 
-	if err := i.repo.Create(ctx, adv); err != nil {
+	if err := adv.Validate(); err != nil {
+		return CreateAdvertismentOutput{}, err
+	}
+
+	if err := i.advRepo.Create(ctx, adv); err != nil {
 		return CreateAdvertismentOutput{}, fmt.Errorf("failed to create advertisment: %v", err)
 	}
 

@@ -15,7 +15,7 @@ func (p findAdvertismentPresenter) Output(adv domain.Advertisment) usecase.FindA
 	return usecase.FindAdvertismentOutput{
 		ID:                  adv.ID,
 		Name:                adv.Name,
-		CategoryID:          adv.CategoryID,
+		Category:            adv.Category.Name,
 		Description:         adv.Description,
 		Price:               adv.Price,
 		MainPhotoURL:        adv.MainPhotoURL,

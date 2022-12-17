@@ -49,19 +49,19 @@ type (
 	// Объявление
 	Advertisment struct {
 		// Идентификатор
-		ID string
+		ID string `bson:"_id"`
 		// Имя
-		Name string
+		Name string `bson:"name"`
 		// Категория
-		CategoryID string
+		Category Category `bson:"category"`
 		// Описание
-		Description string
+		Description string `bson:"description"`
 		// Цена
-		Price Price
+		Price Price `bson:"price"`
 		// Ссылка на главное изображение
-		MainPhotoURL string
+		MainPhotoURL string `bson:"mainPhotoURL"`
 		// Ссылки на дополнительные изображения
-		AdditionalPhotoURLs []string
+		AdditionalPhotoURLs []string `bson:"additionalPhotoURLs"`
 	}
 
 	// Краткая информация об объявлении
@@ -79,3 +79,29 @@ type (
 	// Номер страницы объявлений
 	AdvertismentPageNumber uint
 )
+
+func (a Advertisment) Validate() error {
+	// Валидация полей
+	if len(a.Name) > MAX_NAME_LENGTH {
+		return ErrAdvMaxNameLength
+	}
+
+	if len(a.Description) > MAX_DESC_LENGTH {
+		return ErrAdvMaxDescLength
+	}
+
+	if len(a.AdditionalPhotoURLs) > MAX_PHOTO_COUNT {
+		return ErrAdvMaxPhotoCount
+	}
+
+	return nil
+}
+
+func (a Advertisment) Summarize() AdvertismentSummary {
+	return AdvertismentSummary{
+		Name:         a.Name,
+		Category:     a.Category,
+		Price:        a.Price,
+		MainPhotoURL: a.MainPhotoURL,
+	}
+}

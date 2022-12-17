@@ -72,7 +72,6 @@ func (h *advertismentHandler) getAdvertismentSummary(c *gin.Context) {
 
 	uc := usecase.NewFindAllAdvertismentSummaryInteractor(
 		h.advRepo,
-		h.catRepo,
 		presenter.NewFindAllAdvertismentSummaryPresenter(),
 	)
 
@@ -95,7 +94,11 @@ func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 		return
 	}
 
-	uc := usecase.NewCreateAdvertismentInteractor(h.advRepo, presenter.NewCreateAdvertismentPresenter())
+	uc := usecase.NewCreateAdvertismentInteractor(
+		h.advRepo,
+		h.catRepo,
+		presenter.NewCreateAdvertismentPresenter(),
+	)
 	out, err := uc.Execute(c.Request.Context(), input)
 	if err != nil {
 		err_resp.ErrorResponse(c, err)
