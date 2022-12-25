@@ -26,8 +26,13 @@ func (r *categoryMongoDBRepository) Collection() *mongo.Collection {
 	return r.client.Collection(CAT_COLLECTION_NAME)
 }
 
-func (r *categoryMongoDBRepository) CreateCategory(ctx context.Context, category domain.Category) error {
+func (r *categoryMongoDBRepository) Create(ctx context.Context, category domain.Category) error {
 	_, err := r.Collection().InsertOne(ctx, category)
+	return err
+}
+
+func (r *categoryMongoDBRepository) Delete(ctx context.Context, id string) error {
+	_, err := r.Collection().DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }
 

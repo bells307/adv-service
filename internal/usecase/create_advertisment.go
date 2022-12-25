@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bells307/adv-service/internal/domain"
+	_ "github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -17,13 +18,13 @@ type (
 	// Создать объявление
 	CreateAdvertismentInput struct {
 		// Имя
-		Name string `json:"name"`
-		// ID категории
-		CategoryID string `json:"categoryID"`
+		Name string `json:"name" validate:"required"`
+		// ID категорий
+		Categories []string `json:"categories" validate:"required"`
 		// Описание
 		Description string `json:"description"`
 		// Цена
-		Price domain.Price `json:"price"`
+		Price domain.Price `json:"price" validate:"required"`
 		// Ссылка на главное фото
 		MainPhotoURL string `json:"mainPhotoURL"`
 		// Ссылки на дополнительные фото
@@ -41,8 +42,8 @@ type (
 		ID string `json:"id"`
 		// Имя
 		Name string `json:"name"`
-		// ID категории
-		Category string `json:"category"`
+		// Идентификаторы категорий
+		Categories []string `json:"categories"`
 		// Описание
 		Description string `json:"description"`
 		// Цена
@@ -73,15 +74,15 @@ func NewCreateAdvertismentInteractor(
 }
 
 func (i createAdvertismentInteractor) Execute(ctx context.Context, input CreateAdvertismentInput) (CreateAdvertismentOutput, error) {
-	cat, err := i.catRepo.FindByID(ctx, input.CategoryID)
+	categories, err := i.catRepo.FindAllByID(ctx, input.Categories)
 	if err != nil {
-		return CreateAdvertismentOutput{}, fmt.Errorf("can't find category %s: %v", input.CategoryID, err)
+		return CreateAdvertismentOutput{}, fmt.Errorf("can't find categories %s: %v", input.Categories, err)
 	}
 
 	adv := domain.Advertisment{
 		ID:                  uuid.NewString(),
 		Name:                input.Name,
-		Category:            cat,
+		Categories:          categories,
 		Description:         input.Description,
 		Price:               input.Price,
 		MainPhotoURL:        input.MainPhotoURL,

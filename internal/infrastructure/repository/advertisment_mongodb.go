@@ -2,20 +2,38 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/bells307/adv-service/internal/domain"
 	"github.com/bells307/adv-service/pkg/mongodb"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 const ADV_COLLECTION_NAME = "advertisment"
 
 type advertismentMongoDBRepository struct {
 	client *mongodb.MongoDBClient
+}
+
+// Представление документа объявления в mongodb
+type Advertisment struct {
+	// Идентификатор
+	ID string `bson:"_id"`
+	// Имя
+	Name string `bson:"name"`
+	// Категория
+	// В базе мы будем хранить идентификаторы категорий. В дальнейшем, при запросе
+	// доменной модели, мы будем аггрегировать их с коллекцией категорий
+	Categories []string `bson:"categories"`
+	// Описание
+	Description string `bson:"description"`
+	// Цена
+	Price domain.Price `bson:"price"`
+	// Ссылка на главное изображение
+	MainPhotoURL string `bson:"mainPhotoURL"`
+	// Ссылки на дополнительные изображения
+	AdditionalPhotoURLs []string `bson:"additionalPhotoURLs"`
 }
 
 func NewAdvertismentMongoDBRepository(client *mongodb.MongoDBClient) *advertismentMongoDBRepository {
@@ -28,43 +46,118 @@ func (r *advertismentMongoDBRepository) Collection() *mongo.Collection {
 
 // Получить объявления
 func (r *advertismentMongoDBRepository) Find(ctx context.Context, limit uint, offset uint) ([]domain.Advertisment, error) {
-	filter := bson.D{}
-	opts := options.Find().SetLimit(int64(limit)).SetSkip(int64(offset))
+	// Аггрегируем с коллекцией категорий по полю "id"
+	pipeline := bson.A{
+		bson.M{
+			"$lookup": bson.M{
+				"from":         CAT_COLLECTION_NAME,
+				"localField":   "categories",
+				"foreignField": "_id",
+				"as":           "categories",
+			},
+		},
+	}
 
-	cur, err := r.Collection().Find(ctx, filter, opts)
+	if limit > 0 {
+		pipeline = append(pipeline, bson.M{"$limit": offset + limit})
+	}
+
+	if offset > 0 {
+		pipeline = append(pipeline, bson.M{"$skip": offset})
+	}
+
+	cur, err := r.Collection().Aggregate(ctx, pipeline)
 	if err != nil {
-		return []domain.Advertisment{}, fmt.Errorf("can't find advertisments in mongo collection: %v", err)
+		return []domain.Advertisment{}, fmt.Errorf("error finding advertisments in mongodb: %v", err)
 	}
 	defer cur.Close(ctx)
 
-	var advertisments []domain.Advertisment
-	if err := cur.All(ctx, &advertisments); err != nil {
-		return []domain.Advertisment{}, fmt.Errorf("error decoding mongodb cursor: %v", err)
+	var advs []domain.Advertisment
+	if err := cur.All(ctx, &advs); err != nil {
+		return []domain.Advertisment{}, fmt.Errorf(
+			"error decoding mongodb cursor while finding advertisments in mongodb: %v",
+			err,
+		)
 	}
 
-	return advertisments, nil
+	if len(advs) == 0 {
+		return []domain.Advertisment{}, domain.ErrAdvNotFound
+	}
+
+	return advs, nil
+}
+
+// Проверить, есть ли объявления с категорией
+func (r *advertismentMongoDBRepository) ExistsWithCategory(ctx context.Context, categoryID string) (bool, error) {
+	c, err := r.Collection().CountDocuments(ctx, bson.M{
+		"category": bson.M{
+			"_id": categoryID,
+		},
+	})
+	if err != nil {
+		return false, fmt.Errorf("error checking category exists for advertisment: %v", err)
+	}
+
+	return c > 0, nil
 }
 
 // Получить объявление
 func (r *advertismentMongoDBRepository) FindByID(ctx context.Context, id string) (domain.Advertisment, error) {
-	res := r.Collection().FindOne(ctx, bson.M{"_id": id})
-	err := res.Err()
+	// Аггрегируем с коллекцией категорий по полю "id"
+	pipeline := bson.A{
+		bson.M{"$match": bson.M{"_id": id}},
+		bson.M{
+			"$lookup": bson.M{
+				"from":         CAT_COLLECTION_NAME,
+				"localField":   "categories",
+				"foreignField": "_id",
+				"as":           "categories",
+			},
+		},
+	}
+	cur, err := r.Collection().Aggregate(ctx, pipeline)
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return domain.Advertisment{}, domain.ErrAdvNotFound
-		} else {
-			return domain.Advertisment{}, err
-		}
+		return domain.Advertisment{}, fmt.Errorf("error finding advertisment by ID in mongodb: %v", err)
+	}
+	defer cur.Close(ctx)
+
+	var advs []domain.Advertisment
+	if err := cur.All(ctx, &advs); err != nil {
+		return domain.Advertisment{}, fmt.Errorf(
+			"error decoding mongodb cursor while finding advertisment by id in mongodb: %v",
+			err,
+		)
 	}
 
-	var advertisment domain.Advertisment
-	res.Decode(&advertisment)
+	if len(advs) == 0 {
+		return domain.Advertisment{}, domain.ErrAdvNotFound
+	}
 
-	return advertisment, nil
+	return advs[0], nil
 }
 
 // Создать объявление
 func (r *advertismentMongoDBRepository) Create(ctx context.Context, adv domain.Advertisment) error {
-	_, err := r.Collection().InsertOne(ctx, adv)
+	var categories []string
+	for _, cat := range adv.Categories {
+		categories = append(categories, cat.ID)
+	}
+
+	docAdv := Advertisment{
+		ID:                  adv.ID,
+		Name:                adv.Name,
+		Categories:          categories,
+		Description:         adv.Description,
+		Price:               adv.Price,
+		MainPhotoURL:        adv.MainPhotoURL,
+		AdditionalPhotoURLs: adv.AdditionalPhotoURLs,
+	}
+	_, err := r.Collection().InsertOne(ctx, docAdv)
+	return err
+}
+
+// Удалить объявление
+func (r *advertismentMongoDBRepository) Delete(ctx context.Context, id string) error {
+	_, err := r.Collection().DeleteOne(ctx, bson.M{"_id": id})
 	return err
 }

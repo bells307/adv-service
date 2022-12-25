@@ -31,6 +31,7 @@ func (h *advertismentHandler) Register(g *gin.RouterGroup) {
 			advertisments.GET("/:id", h.getAdvertisment)
 			advertisments.GET("/summary", h.getAdvertismentSummary)
 			advertisments.POST("", h.createAdvertisment)
+			advertisments.DELETE("/:id", h.deleteAdvertisment)
 		}
 	}
 }
@@ -107,4 +108,25 @@ func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 
 	// Возвращаем клиенту ID созданного объявления
 	c.JSON(http.StatusCreated, gin.H{"id": out.ID})
+}
+
+// Удалить объявление
+func (h *advertismentHandler) deleteAdvertisment(c *gin.Context) {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	input := usecase.DeleteAdvertismentInput{
+		ID: id,
+	}
+
+	uc := usecase.NewDeleteAdvertismentInteractor(h.advRepo)
+	if err := uc.Execute(c.Request.Context(), input); err != nil {
+		err_resp.ErrorResponse(c, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

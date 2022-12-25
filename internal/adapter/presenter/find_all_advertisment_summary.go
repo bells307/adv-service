@@ -17,12 +17,12 @@ func (p findAllAdvertismentSummaryPresenter) Output(summary []domain.Advertismen
 	for _, sum := range summary {
 		val := struct {
 			Name         string       `json:"name"`
-			Category     string       `json:"category"`
+			Categories   []string     `json:"categories"`
 			Price        domain.Price `json:"price"`
 			MainPhotoURL string       `json:"mainPhotoURL"`
 		}{
 			Name:         sum.Name,
-			Category:     sum.Category.Name,
+			Categories:   sum.Categories,
 			Price:        sum.Price,
 			MainPhotoURL: sum.MainPhotoURL,
 		}

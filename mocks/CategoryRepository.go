@@ -14,12 +14,26 @@ type CategoryRepository struct {
 	mock.Mock
 }
 
-// CreateCategory provides a mock function with given fields: _a0, _a1
-func (_m *CategoryRepository) CreateCategory(_a0 context.Context, _a1 domain.Category) error {
+// Create provides a mock function with given fields: _a0, _a1
+func (_m *CategoryRepository) Create(_a0 context.Context, _a1 domain.Category) error {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, domain.Category) error); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// Delete provides a mock function with given fields: _a0, _a1
+func (_m *CategoryRepository) Delete(_a0 context.Context, _a1 string) error {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		r0 = ret.Error(0)

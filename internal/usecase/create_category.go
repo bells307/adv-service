@@ -53,7 +53,7 @@ func (i createCategoryInteractor) Execute(ctx context.Context, input CreateCateg
 		Name: input.Name,
 	}
 
-	err := i.repo.CreateCategory(ctx, cat)
+	err := i.repo.Create(ctx, cat)
 	if err != nil {
 		return i.presenter.Output(domain.Category{}), err
 	}

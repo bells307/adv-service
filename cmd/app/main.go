@@ -28,7 +28,7 @@ func main() {
 	advHandler := v1.NewAdvertismentHandler(advRepo, catRepo)
 	advHandler.Register(router.Group("/api"))
 
-	catHandler := v1.NewCategoryHandler(catRepo)
+	catHandler := v1.NewCategoryHandler(advRepo, catRepo)
 	catHandler.Register(router.Group("/api"))
 
 	router.Run("localhost:10000")

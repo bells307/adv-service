@@ -26,7 +26,7 @@ func TestCreateAdvertisment(t *testing.T) {
 	photoUrls := generatePhotoUrls(domain.MAX_PHOTO_COUNT)
 	in := usecase.CreateAdvertismentInput{
 		Name:        "myadv",
-		CategoryID:  cat.ID,
+		Categories:  []string{cat.ID},
 		Description: "adv description",
 		Price: domain.Price{
 			Value:    1000,
@@ -40,13 +40,13 @@ func TestCreateAdvertisment(t *testing.T) {
 	advRepoMock.On("Create", ctx, mock.MatchedBy(matchInput(in))).Return(nil)
 
 	catRepoMock := mocks.NewCategoryRepository(t)
-	catRepoMock.On("FindByID", ctx, cat.ID).Return(cat, nil)
+	catRepoMock.On("FindAllByID", ctx, []string{cat.ID}).Return([]domain.Category{cat}, nil)
 
 	createAdvPresMock := mocks.NewCreateAdvertismentPresenter(t)
 	createAdvPresMock.On("Output", mock.MatchedBy(matchInput(in))).Return(usecase.CreateAdvertismentOutput{
 		ID:                  mock.Anything,
 		Name:                in.Name,
-		Category:            cat.Name,
+		Categories:          []string{cat.ID},
 		Description:         in.Description,
 		Price:               in.Price,
 		MainPhotoURL:        in.MainPhotoURL,
@@ -64,7 +64,7 @@ func TestCreateAdvertisment(t *testing.T) {
 	assert.Equal(t, out, usecase.CreateAdvertismentOutput{
 		ID:                  mock.Anything,
 		Name:                in.Name,
-		Category:            cat.Name,
+		Categories:          []string{cat.ID},
 		Description:         in.Description,
 		Price:               in.Price,
 		MainPhotoURL:        in.MainPhotoURL,
@@ -84,7 +84,7 @@ func TestCreateAdvertismentWithMaxAdditionalPhotoCountExceeded(t *testing.T) {
 	photoUrls := generatePhotoUrls(domain.MAX_PHOTO_COUNT + 2)
 	in := usecase.CreateAdvertismentInput{
 		Name:        "myadv",
-		CategoryID:  cat.ID,
+		Categories:  []string{cat.ID},
 		Description: "adv description",
 		Price: domain.Price{
 			Value:    1000,
@@ -97,7 +97,7 @@ func TestCreateAdvertismentWithMaxAdditionalPhotoCountExceeded(t *testing.T) {
 	advRepoMock := mocks.NewAdvertismentRepository(t)
 
 	catRepoMock := mocks.NewCategoryRepository(t)
-	catRepoMock.On("FindByID", ctx, cat.ID).Return(cat, nil)
+	catRepoMock.On("FindAllByID", ctx, []string{cat.ID}).Return([]domain.Category{cat}, nil)
 
 	createAdvPresMock := mocks.NewCreateAdvertismentPresenter(t)
 
@@ -123,7 +123,7 @@ func TestCreateAdvertismentWithMaxNameLengthExceeded(t *testing.T) {
 	photoUrls := generatePhotoUrls(domain.MAX_PHOTO_COUNT)
 	in := usecase.CreateAdvertismentInput{
 		Name:        randSeq(domain.MAX_NAME_LENGTH + 1),
-		CategoryID:  cat.ID,
+		Categories:  []string{cat.ID},
 		Description: "adv description",
 		Price: domain.Price{
 			Value:    1000,
@@ -136,7 +136,7 @@ func TestCreateAdvertismentWithMaxNameLengthExceeded(t *testing.T) {
 	advRepoMock := mocks.NewAdvertismentRepository(t)
 
 	catRepoMock := mocks.NewCategoryRepository(t)
-	catRepoMock.On("FindByID", ctx, cat.ID).Return(cat, nil)
+	catRepoMock.On("FindAllByID", ctx, []string{cat.ID}).Return([]domain.Category{cat}, nil)
 
 	createAdvPresMock := mocks.NewCreateAdvertismentPresenter(t)
 
@@ -162,7 +162,7 @@ func TestCreateAdvertismentWithMaxDescLengthExceeded(t *testing.T) {
 	photoUrls := generatePhotoUrls(domain.MAX_PHOTO_COUNT)
 	in := usecase.CreateAdvertismentInput{
 		Name:        "myadv",
-		CategoryID:  cat.ID,
+		Categories:  []string{cat.ID},
 		Description: randSeq(domain.MAX_DESC_LENGTH + 1),
 		Price: domain.Price{
 			Value:    1000,
@@ -175,7 +175,7 @@ func TestCreateAdvertismentWithMaxDescLengthExceeded(t *testing.T) {
 	advRepoMock := mocks.NewAdvertismentRepository(t)
 
 	catRepoMock := mocks.NewCategoryRepository(t)
-	catRepoMock.On("FindByID", ctx, cat.ID).Return(cat, nil)
+	catRepoMock.On("FindAllByID", ctx, []string{cat.ID}).Return([]domain.Category{cat}, nil)
 
 	createAdvPresMock := mocks.NewCreateAdvertismentPresenter(t)
 
@@ -194,18 +194,33 @@ func matchInput(in usecase.CreateAdvertismentInput) func(a domain.Advertisment) 
 	return func(a domain.Advertisment) bool {
 		if a.Name != in.Name {
 			return false
-		} else if a.Category.ID != in.CategoryID {
-			return false
 		} else if a.Description != in.Description {
 			return false
 		} else if a.Price != in.Price {
 			return false
 		} else if a.MainPhotoURL != in.MainPhotoURL {
 			return false
+		} else if len(a.AdditionalPhotoURLs) != len(in.AdditionalPhotoURLs) {
+			return false
 		}
-		// } else if a.AdditionalPhotoURLs != in.AdditionalPhotoURLs {
-		// 	return false
-		// }
+
+		for _, cat := range a.Categories {
+			found := false
+			for _, inputCat := range in.Categories {
+				if cat.ID == inputCat {
+					found = true
+				}
+			}
+			if !found {
+				return false
+			}
+		}
+
+		for i := range a.AdditionalPhotoURLs {
+			if a.AdditionalPhotoURLs[i] != in.AdditionalPhotoURLs[i] {
+				return false
+			}
+		}
 
 		return true
 	}

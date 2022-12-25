@@ -29,8 +29,8 @@ type (
 		ID string `json:"id"`
 		// Имя
 		Name string `json:"name"`
-		// ID категории
-		Category string `json:"category"`
+		// Имена категорий
+		Categories []string `json:"categories"`
 		// Описание
 		Description string `json:"description"`
 		// Цена

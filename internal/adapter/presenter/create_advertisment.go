@@ -12,10 +12,15 @@ func NewCreateAdvertismentPresenter() usecase.CreateAdvertismentPresenter {
 }
 
 func (p createAdvertismentPresenter) Output(adv domain.Advertisment) usecase.CreateAdvertismentOutput {
+	var categories []string
+	for _, category := range adv.Categories {
+		categories = append(categories, category.ID)
+	}
+
 	return usecase.CreateAdvertismentOutput{
 		ID:                  adv.ID,
 		Name:                adv.Name,
-		Category:            adv.Category.Name,
+		Categories:          categories,
 		Description:         adv.Description,
 		Price:               adv.Price,
 		MainPhotoURL:        adv.MainPhotoURL,

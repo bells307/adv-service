@@ -40,40 +40,44 @@ type (
 	AdvertismentRepository interface {
 		// Получить объявления
 		Find(ctx context.Context, limit uint, offset uint) ([]Advertisment, error)
+		// Проверить, есть ли объявления с категорией
+		ExistsWithCategory(ctx context.Context, categoryID string) (bool, error)
 		// Получить объявление по ID
 		FindByID(ctx context.Context, id string) (Advertisment, error)
 		// Создать объявление
 		Create(ctx context.Context, adv Advertisment) error
+		// Удалить объявление
+		Delete(ctx context.Context, id string) error
 	}
 
 	// Объявление
 	Advertisment struct {
 		// Идентификатор
-		ID string `bson:"_id"`
+		ID string `json:"id" bson:"_id"`
 		// Имя
-		Name string `bson:"name"`
-		// Категория
-		Category Category `bson:"category"`
+		Name string `json:"name" bson:"name"`
+		// Категории
+		Categories []Category `json:"categories" bson:"categories"`
 		// Описание
-		Description string `bson:"description"`
+		Description string `json:"description" bson:"description"`
 		// Цена
-		Price Price `bson:"price"`
+		Price Price `json:"price" bson:"price"`
 		// Ссылка на главное изображение
-		MainPhotoURL string `bson:"mainPhotoURL"`
+		MainPhotoURL string `json:"mainPhotoURL" bson:"mainPhotoURL"`
 		// Ссылки на дополнительные изображения
-		AdditionalPhotoURLs []string `bson:"additionalPhotoURLs"`
+		AdditionalPhotoURLs []string `json:"additionalPhotoURLs" bson:"additionalPhotoURLs"`
 	}
 
 	// Краткая информация об объявлении
 	AdvertismentSummary struct {
 		// Имя
-		Name string
-		// Категория
-		Category Category
+		Name string `json:"name"`
+		// Категории
+		Categories []string `json:"categories"`
 		// Цена
-		Price Price
+		Price Price `json:"price"`
 		// Ссылка на главное изображение
-		MainPhotoURL string
+		MainPhotoURL string `json:"mainPhotoURL"`
 	}
 
 	// Номер страницы объявлений
@@ -98,9 +102,14 @@ func (a Advertisment) Validate() error {
 }
 
 func (a Advertisment) Summarize() AdvertismentSummary {
+	var categoryNames []string
+	for _, category := range a.Categories {
+		categoryNames = append(categoryNames, category.Name)
+	}
+
 	return AdvertismentSummary{
 		Name:         a.Name,
-		Category:     a.Category,
+		Categories:   categoryNames,
 		Price:        a.Price,
 		MainPhotoURL: a.MainPhotoURL,
 	}

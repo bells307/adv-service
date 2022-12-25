@@ -29,7 +29,7 @@ type (
 		// Название объявления
 		Name string `json:"name"`
 		// Категория
-		Category string `json:"category"`
+		Categories []string `json:"categories"`
 		// Цена
 		Price domain.Price `json:"price"`
 		// Ссылка на главное фото

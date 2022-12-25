@@ -12,10 +12,15 @@ func NewFindAdvertismentPresenter() usecase.FindAdvertismentPresenter {
 }
 
 func (p findAdvertismentPresenter) Output(adv domain.Advertisment) usecase.FindAdvertismentOutput {
+	var categoryNames []string
+	for _, category := range adv.Categories {
+		categoryNames = append(categoryNames, category.Name)
+	}
+
 	return usecase.FindAdvertismentOutput{
 		ID:                  adv.ID,
 		Name:                adv.Name,
-		Category:            adv.Category.Name,
+		Categories:          categoryNames,
 		Description:         adv.Description,
 		Price:               adv.Price,
 		MainPhotoURL:        adv.MainPhotoURL,

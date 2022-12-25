@@ -5,13 +5,18 @@ import (
 	"errors"
 )
 
-var ErrCategoryNotFound = errors.New("category not found")
+var (
+	ErrCategoryNotFound                 = errors.New("category not found")
+	ErrDeletingCategoryWithAdvertisment = errors.New("can't delete category with existing advertisments")
+)
 
 type (
 	// Репозиторий категорий
 	CategoryRepository interface {
 		// Создать категорию
-		CreateCategory(context.Context, Category) error
+		Create(context.Context, Category) error
+		// Удалить категорию
+		Delete(context.Context, string) error
 		// Получить по ID
 		FindByID(context.Context, string) (Category, error)
 		// Получить все
@@ -21,8 +26,8 @@ type (
 	// Категория объявления
 	Category struct {
 		// Идентификатор
-		ID string `bson:"_id"`
+		ID string `json:"id" bson:"_id"`
 		// Имя
-		Name string `bson:"name"`
+		Name string `json:"name" bson:"name"`
 	}
 )
