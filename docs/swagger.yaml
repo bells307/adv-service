@@ -104,6 +104,25 @@ definitions:
         - $ref: '#/definitions/domain.Price'
         description: Цена
     type: object
+  usecase.CreateCategoryInput:
+    properties:
+      name:
+        example: car
+        type: string
+    required:
+    - name
+    type: object
+  usecase.CreateCategoryOutput:
+    properties:
+      id:
+        description: Идентификатор
+        example: e15a4f3f-1549-466e-990a-4b44d10bd3aa
+        type: string
+      name:
+        description: Имя
+        example: car
+        type: string
+    type: object
   usecase.FindAdvertismentOutput:
     properties:
       additionalPhotoURLs:
@@ -216,7 +235,7 @@ paths:
         "404":
           description: Объявление не найдено
           schema:
-            type: "null"
+            type: string
         "500":
           description: Внутренняя ошибка сервиса
           schema:
@@ -271,4 +290,50 @@ paths:
         страницам
       tags:
       - advertisment
+  /api/v1/category:
+    post:
+      consumes:
+      - application/json
+      operationId: create-category
+      parameters:
+      - description: Создание объявления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecase.CreateCategoryInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешное создание категории
+          schema:
+            $ref: '#/definitions/usecase.CreateCategoryOutput'
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            $ref: '#/definitions/err_resp.ErrorResponse'
+      summary: Создать категорию
+      tags:
+      - category
+  /api/v1/category/{id}:
+    delete:
+      operationId: delete-category
+      parameters:
+      - description: Идентификатор категории
+        in: query
+        name: id
+        type: string
+      responses:
+        "204":
+          description: Удаление произведено успешно
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            $ref: '#/definitions/err_resp.ErrorResponse'
+      summary: Удалить категорию
+      tags:
+      - category
 swagger: "2.0"

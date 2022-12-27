@@ -149,7 +149,7 @@
                     "404": {
                         "description": "Объявление не найдено",
                         "schema": {
-                            "type": "null"
+                            "type": "string"
                         }
                     },
                     "500": {
@@ -170,6 +170,77 @@
                     {
                         "type": "string",
                         "description": "Идентификатор объявления",
+                        "name": "id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Удаление произведено успешно",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервиса",
+                        "schema": {
+                            "$ref": "#/definitions/err_resp.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/category": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "category"
+                ],
+                "summary": "Создать категорию",
+                "operationId": "create-category",
+                "parameters": [
+                    {
+                        "description": "Создание объявления",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/usecase.CreateCategoryInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Успешное создание категории",
+                        "schema": {
+                            "$ref": "#/definitions/usecase.CreateCategoryOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервиса",
+                        "schema": {
+                            "$ref": "#/definitions/err_resp.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/category/{id}": {
+            "delete": {
+                "tags": [
+                    "category"
+                ],
+                "summary": "Удалить категорию",
+                "operationId": "delete-category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор категории",
                         "name": "id",
                         "in": "query"
                     }
@@ -339,6 +410,33 @@
                             "$ref": "#/definitions/domain.Price"
                         }
                     ]
+                }
+            }
+        },
+        "usecase.CreateCategoryInput": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "car"
+                }
+            }
+        },
+        "usecase.CreateCategoryOutput": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Идентификатор",
+                    "type": "string",
+                    "example": "e15a4f3f-1549-466e-990a-4b44d10bd3aa"
+                },
+                "name": {
+                    "description": "Имя",
+                    "type": "string",
+                    "example": "car"
                 }
             }
         },
