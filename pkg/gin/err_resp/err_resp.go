@@ -6,12 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type errorResponse struct {
+type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
-func ErrorResponse(c *gin.Context, err error) {
-	resp := errorResponse{
+func NewErrorResponse(c *gin.Context, err error) {
+	resp := ErrorResponse{
 		Message: err.Error(),
 	}
 	c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": resp})

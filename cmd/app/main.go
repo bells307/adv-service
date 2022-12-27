@@ -3,21 +3,27 @@ package main
 import (
 	"log"
 
+	"github.com/bells307/adv-service/cmd/app/config"
+	"github.com/bells307/adv-service/internal/adapter/repository"
 	v1 "github.com/bells307/adv-service/internal/infrastructure/delivery/http/v1"
-	"github.com/bells307/adv-service/internal/infrastructure/repository"
 	"github.com/bells307/adv-service/pkg/mongodb"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+//	@title	adv-service API
+//	@verion	0.1
 func main() {
-	router := gin.Default()
-
-	mongoConfig := mongodb.MongoDBConfig{
-		Uri:    "mongodb://admin:admin@localhost:27017",
-		DbName: "adv-service",
+	cfg, err := config.LoadConfig(".env")
+	if err != nil {
+		log.Fatalf("error while loading application configuration: %v", err)
 	}
 
-	mongoClient, err := mongodb.NewMongoDB(mongoConfig)
+	router := gin.Default()
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	mongoClient, err := mongodb.NewMongoDB(cfg.MongoDB)
 	if err != nil {
 		log.Fatalf("can't connect to MongoDB: %v", err)
 	}
@@ -31,5 +37,5 @@ func main() {
 	catHandler := v1.NewCategoryHandler(advRepo, catRepo)
 	catHandler.Register(router.Group("/api"))
 
-	router.Run("localhost:10000")
+	router.Run(cfg.Listen)
 }

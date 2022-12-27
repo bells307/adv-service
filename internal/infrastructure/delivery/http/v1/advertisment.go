@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	_ "github.com/bells307/adv-service/docs"
 	"github.com/bells307/adv-service/internal/adapter/presenter"
 	"github.com/bells307/adv-service/internal/domain"
 	"github.com/bells307/adv-service/internal/usecase"
@@ -36,7 +37,15 @@ func (h *advertismentHandler) Register(g *gin.RouterGroup) {
 	}
 }
 
-// Получить информацию об объявлении
+//	@Summary	Получить информация об объявлении
+//	@Tags		advertisment
+//	@ID			get-advertisment
+//	@Produce	json
+//	@Param		id	path		string							true	"ID объявления"
+//	@Success	200	{object}	usecase.FindAdvertismentOutput	"Информация об объявлении"
+//	@Failure	404	null		"Объявление не найдено"
+//	@Failure	500	{object}	err_resp.ErrorResponse	"Внутренняя ошибка сервиса"
+//	@Router		/api/v1/advertisment/{id} [get]
 func (h *advertismentHandler) getAdvertisment(c *gin.Context) {
 	id := c.Param("id")
 
@@ -45,24 +54,38 @@ func (h *advertismentHandler) getAdvertisment(c *gin.Context) {
 		ID: id,
 	})
 	if err != nil {
-		err_resp.ErrorResponse(c, err)
-		return
+		if errors.Is(err, domain.ErrAdvNotFound) {
+			c.AbortWithStatus(http.StatusNotFound)
+			return
+		} else {
+			err_resp.NewErrorResponse(c, err)
+			return
+		}
+
 	}
 
 	c.JSON(http.StatusOK, out)
 }
 
+//	@Summary	Получить краткую информация об объявлениях с возможностью запроса по страницам
+//	@Tags		advertisment
+//	@ID			get-advertisment-summary
+//	@Produce	json
+//	@Param		page	query		integer										false	"Номер страницы"
+//	@Success	200		{object}	usecase.FindAllAdvertismentSummaryOutput	"Краткая информация об объявлениях"
+//	@Failure	500		{object}	err_resp.ErrorResponse						"Внутренняя ошибка сервиса"
+//	@Router		/api/v1/advertisment/summary [get]
 func (h *advertismentHandler) getAdvertismentSummary(c *gin.Context) {
 	var page *uint
 	pageQuery, ok := c.Request.URL.Query()["page"]
 	if ok {
 		if len(pageQuery) > 1 {
-			err_resp.ErrorResponse(c, errors.New("page query field can't contain more than one value"))
+			err_resp.NewErrorResponse(c, errors.New("page query field can't contain more than one value"))
 			return
 		}
 		pageNum, err := strconv.Atoi(pageQuery[0])
 		if err != nil {
-			err_resp.ErrorResponse(c, fmt.Errorf("can't parse page query field: %v", err))
+			err_resp.NewErrorResponse(c, fmt.Errorf("can't parse page query field: %v", err))
 			return
 		}
 		page_ := uint(pageNum)
@@ -81,14 +104,23 @@ func (h *advertismentHandler) getAdvertismentSummary(c *gin.Context) {
 	})
 
 	if err != nil {
-		err_resp.ErrorResponse(c, err)
+		err_resp.NewErrorResponse(c, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, out)
 }
 
-// Создать объявление
+//	@Summary	Создать объявление
+//	@Tags		advertisment
+//	@ID			create-advertisment
+//	@Accept		json
+//	@Produce	json
+//	@Param		input	body		usecase.CreateAdvertismentInput		true	"Создание объявления"
+//	@Success	200		{object}	usecase.CreateAdvertismentOutput	"Созданное объявление"
+//	@Failure	400		{string}	string								"Ошибка формирования запроса"
+//	@Failure	500		{object}	err_resp.ErrorResponse				"Внутренняя ошибка сервиса"
+//	@Router		/api/v1/advertisment [post]
 func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 	var input usecase.CreateAdvertismentInput
 	if err := c.Bind(&input); err != nil {
@@ -102,7 +134,7 @@ func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 	)
 	out, err := uc.Execute(c.Request.Context(), input)
 	if err != nil {
-		err_resp.ErrorResponse(c, err)
+		err_resp.NewErrorResponse(c, err)
 		return
 	}
 
@@ -110,7 +142,13 @@ func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": out.ID})
 }
 
-// Удалить объявление
+//	@Summary	Удалить объявление
+//	@Tags		advertisment
+//	@ID			delete-advertisment
+//	@Param		id	query		string					false	"Идентификатор объявления"
+//	@Success	204	{object}	string					"Удаление произведено успешно"
+//	@Failure	500	{object}	err_resp.ErrorResponse	"Внутренняя ошибка сервиса"
+//	@Router		/api/v1/advertisment/{id} [delete]
 func (h *advertismentHandler) deleteAdvertisment(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
@@ -124,7 +162,7 @@ func (h *advertismentHandler) deleteAdvertisment(c *gin.Context) {
 
 	uc := usecase.NewDeleteAdvertismentInteractor(h.advRepo)
 	if err := uc.Execute(c.Request.Context(), input); err != nil {
-		err_resp.ErrorResponse(c, err)
+		err_resp.NewErrorResponse(c, err)
 		return
 	}
 

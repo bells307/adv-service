@@ -10,6 +10,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
 
+  # optional
   mongo-express:
     image: mongo-express
     restart: always

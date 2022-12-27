@@ -17,7 +17,7 @@ type advertismentMongoDBRepository struct {
 }
 
 // Представление документа объявления в mongodb
-type Advertisment struct {
+type advertismentDocument struct {
 	// Идентификатор
 	ID string `bson:"_id"`
 	// Имя
@@ -143,7 +143,7 @@ func (r *advertismentMongoDBRepository) Create(ctx context.Context, adv domain.A
 		categories = append(categories, cat.ID)
 	}
 
-	docAdv := Advertisment{
+	docAdv := advertismentDocument{
 		ID:                  adv.ID,
 		Name:                adv.Name,
 		Categories:          categories,
@@ -160,4 +160,14 @@ func (r *advertismentMongoDBRepository) Create(ctx context.Context, adv domain.A
 func (r *advertismentMongoDBRepository) Delete(ctx context.Context, id string) error {
 	_, err := r.Collection().DeleteOne(ctx, bson.M{"_id": id})
 	return err
+}
+
+func (r *advertismentMongoDBRepository) CountByCategory(ctx context.Context, categoryID string) (uint, error) {
+	c, err := r.Collection().CountDocuments(ctx, bson.M{"categories": categoryID})
+
+	if err != nil {
+		return 0, fmt.Errorf("error checking category exists for advertisment: %v", err)
+	}
+
+	return uint(c), nil
 }

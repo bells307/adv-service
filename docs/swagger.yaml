@@ -1,0 +1,274 @@
+definitions:
+  domain.Currency:
+    enum:
+    - rub
+    - usd
+    type: string
+    x-enum-varnames:
+    - RUB
+    - USD
+  domain.Price:
+    properties:
+      currency:
+        allOf:
+        - $ref: '#/definitions/domain.Currency'
+        description: Валюта
+        example: rub
+      value:
+        description: Значение
+        example: 1000
+        type: number
+    type: object
+  err_resp.ErrorResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  usecase.CreateAdvertismentInput:
+    properties:
+      additionalPhotoURLs:
+        description: Ссылки на дополнительные фото
+        example:
+        - http://127.0.0.1/storage/add1.jpg
+        - http://127.0.0.1/storage/add2.jpg
+        items:
+          type: string
+        type: array
+      categories:
+        description: ID категорий
+        example:
+        - a9f9ecfe-25b5-4742-901a-21dee231f6cf
+        - d39c79b6-78e0-41fc-939d-e60a64c0251e
+        - d9ff247b-0469-4106-af73-89e7a966e4a4
+        items:
+          type: string
+        type: array
+      description:
+        description: Описание
+        example: Very big
+        type: string
+      mainPhotoURL:
+        description: Ссылка на главное фото
+        example: http://127.0.0.1/storage/main.jpg
+        type: string
+      name:
+        description: Имя
+        example: Selling the garage
+        type: string
+      price:
+        allOf:
+        - $ref: '#/definitions/domain.Price'
+        description: Цена
+    required:
+    - categories
+    - name
+    - price
+    type: object
+  usecase.CreateAdvertismentOutput:
+    properties:
+      additionalPhotoURLs:
+        description: Ссылки на дополнительные фото
+        example:
+        - http://127.0.0.1/storage/add1.jpg
+        - http://127.0.0.1/storage/add2.jpg
+        items:
+          type: string
+        type: array
+      categories:
+        description: Идентификаторы категорий
+        example:
+        - a9f9ecfe-25b5-4742-901a-21dee231f6cf
+        - d39c79b6-78e0-41fc-939d-e60a64c0251e
+        - d9ff247b-0469-4106-af73-89e7a966e4a4
+        items:
+          type: string
+        type: array
+      description:
+        description: Описание
+        example: Very big
+        type: string
+      id:
+        description: Идентификатор
+        example: 2765cb06-f750-4d1f-b101-860289786469
+        type: string
+      mainPhotoURL:
+        description: Ссылка на главное фото
+        example: http://127.0.0.1/storage/main.jpg
+        type: string
+      name:
+        description: Имя
+        example: Selling the garage
+        type: string
+      price:
+        allOf:
+        - $ref: '#/definitions/domain.Price'
+        description: Цена
+    type: object
+  usecase.FindAdvertismentOutput:
+    properties:
+      additionalPhotoURLs:
+        description: Ссылки на дополнительные фото
+        example:
+        - http://127.0.0.1/storage/add1.jpg
+        - http://127.0.0.1/storage/add2.jpg
+        items:
+          type: string
+        type: array
+      categories:
+        description: Имена категорий
+        example:
+        - real estate
+        - auto
+        - land
+        items:
+          type: string
+        type: array
+      description:
+        description: Описание
+        example: Very big
+        type: string
+      id:
+        description: Идентификатор
+        example: 2765cb06-f750-4d1f-b101-860289786469
+        type: string
+      mainPhotoURL:
+        description: Ссылка на главное фото
+        example: http://127.0.0.1/storage/main.jpg
+        type: string
+      name:
+        description: Имя
+        example: Selling the garage
+        type: string
+      price:
+        allOf:
+        - $ref: '#/definitions/domain.Price'
+        description: Цена
+    type: object
+info:
+  contact: {}
+  title: adv-service API
+paths:
+  /api/v1/advertisment:
+    post:
+      consumes:
+      - application/json
+      operationId: create-advertisment
+      parameters:
+      - description: Создание объявления
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/usecase.CreateAdvertismentInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Созданное объявление
+          schema:
+            $ref: '#/definitions/usecase.CreateAdvertismentOutput'
+        "400":
+          description: Ошибка формирования запроса
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            $ref: '#/definitions/err_resp.ErrorResponse'
+      summary: Создать объявление
+      tags:
+      - advertisment
+  /api/v1/advertisment/{id}:
+    delete:
+      operationId: delete-advertisment
+      parameters:
+      - description: Идентификатор объявления
+        in: query
+        name: id
+        type: string
+      responses:
+        "204":
+          description: Удаление произведено успешно
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            $ref: '#/definitions/err_resp.ErrorResponse'
+      summary: Удалить объявление
+      tags:
+      - advertisment
+    get:
+      operationId: get-advertisment
+      parameters:
+      - description: ID объявления
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Информация об объявлении
+          schema:
+            $ref: '#/definitions/usecase.FindAdvertismentOutput'
+        "404":
+          description: Объявление не найдено
+          schema:
+            type: "null"
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            $ref: '#/definitions/err_resp.ErrorResponse'
+      summary: Получить информация об объявлении
+      tags:
+      - advertisment
+  /api/v1/advertisment/summary:
+    get:
+      operationId: get-advertisment-summary
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Краткая информация об объявлениях
+          schema:
+            items:
+              properties:
+                categories:
+                  description: Категория
+                  example:
+                  - real estate
+                  - auto
+                  - land
+                  items:
+                    type: string
+                  type: array
+                mainPhotoURL:
+                  description: Ссылка на главное фото
+                  example: http://127.0.0.1/storage/main.jpg
+                  type: string
+                name:
+                  description: Название объявления
+                  example: Selling the garage
+                  type: string
+                price:
+                  allOf:
+                  - $ref: '#/definitions/domain.Price'
+                  description: Цена
+              type: object
+            type: array
+        "500":
+          description: Внутренняя ошибка сервиса
+          schema:
+            $ref: '#/definitions/err_resp.ErrorResponse'
+      summary: Получить краткую информация об объявлениях с возможностью запроса по
+        страницам
+      tags:
+      - advertisment
+swagger: "2.0"

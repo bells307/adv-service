@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bells307/adv-service/internal/domain"
+	"github.com/go-playground/validator/v10"
 )
 
 type (
@@ -14,7 +16,7 @@ type (
 
 	// Удалить категорию
 	DeleteCategoryInput struct {
-		ID string `json:"id"`
+		ID string `json:"id" validate:"required" example:"e15a4f3f-1549-466e-990a-4b44d10bd3aa"`
 	}
 
 	DeleteCategoryInteractor struct {
@@ -31,16 +33,21 @@ func NewDeleteCategoryInteractor(
 }
 
 func (i DeleteCategoryInteractor) Execute(ctx context.Context, input DeleteCategoryInput) error {
-	panic("not implemented")
+	validate := validator.New()
+	err := validate.Struct(input)
+	if err != nil {
+		return fmt.Errorf("error validating delete category input: %v", err)
+	}
+
 	// Сначала ищем объявления, которые используют удаляемую категорию
-	// exists, err := i.advRepo.ExistsWithCategory(ctx, input.ID)
-	// if err != nil {
-	// 	return fmt.Errorf("error deleting category %s: %v", input.ID, err)
-	// }
+	count, err := i.advRepo.CountByCategory(ctx, input.ID)
+	if err != nil {
+		return fmt.Errorf("error deleting category %s: %v", input.ID, err)
+	}
 
-	// if exists {
-	// 	return domain.ErrDeletingCategoryWithAdvertisment
-	// }
+	if count > 0 {
+		return domain.ErrDeletingCategoryWithAdvertisment
+	}
 
-	// return i.catRepo.Delete(ctx, input.ID)
+	return i.catRepo.Delete(ctx, input.ID)
 }

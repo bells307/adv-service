@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/bells307/adv-service/internal/domain"
-	_ "github.com/go-playground/validator/v10"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -18,17 +18,17 @@ type (
 	// Создать объявление
 	CreateAdvertismentInput struct {
 		// Имя
-		Name string `json:"name" validate:"required"`
+		Name string `json:"name" validate:"required" example:"Selling the garage"`
 		// ID категорий
-		Categories []string `json:"categories" validate:"required"`
+		Categories []string `json:"categories" validate:"required" example:"a9f9ecfe-25b5-4742-901a-21dee231f6cf,d39c79b6-78e0-41fc-939d-e60a64c0251e,d9ff247b-0469-4106-af73-89e7a966e4a4"`
 		// Описание
-		Description string `json:"description"`
+		Description string `json:"description" example:"Very big"`
 		// Цена
 		Price domain.Price `json:"price" validate:"required"`
 		// Ссылка на главное фото
-		MainPhotoURL string `json:"mainPhotoURL"`
+		MainPhotoURL string `json:"mainPhotoURL" example:"http://127.0.0.1/storage/main.jpg"`
 		// Ссылки на дополнительные фото
-		AdditionalPhotoURLs []string `json:"additionalPhotoURLs"`
+		AdditionalPhotoURLs []string `json:"additionalPhotoURLs" example:"http://127.0.0.1/storage/add1.jpg,http://127.0.0.1/storage/add2.jpg"`
 	}
 
 	// Порт выхода презентера
@@ -39,19 +39,19 @@ type (
 	// Созданное объявление
 	CreateAdvertismentOutput struct {
 		// Идентификатор
-		ID string `json:"id"`
+		ID string `json:"id" example:"2765cb06-f750-4d1f-b101-860289786469"`
 		// Имя
-		Name string `json:"name"`
+		Name string `json:"name" example:"Selling the garage"`
 		// Идентификаторы категорий
-		Categories []string `json:"categories"`
+		Categories []string `json:"categories" example:"a9f9ecfe-25b5-4742-901a-21dee231f6cf,d39c79b6-78e0-41fc-939d-e60a64c0251e,d9ff247b-0469-4106-af73-89e7a966e4a4"`
 		// Описание
-		Description string `json:"description"`
+		Description string `json:"description" example:"Very big"`
 		// Цена
 		Price domain.Price `json:"price"`
 		// Ссылка на главное фото
-		MainPhotoURL string `json:"mainPhotoURL"`
+		MainPhotoURL string `json:"mainPhotoURL" example:"http://127.0.0.1/storage/main.jpg"`
 		// Ссылки на дополнительные фото
-		AdditionalPhotoURLs []string `json:"additionalPhotoURLs"`
+		AdditionalPhotoURLs []string `json:"additionalPhotoURLs" example:"http://127.0.0.1/storage/add1.jpg,http://127.0.0.1/storage/add2.jpg"`
 	}
 
 	createAdvertismentInteractor struct {
@@ -74,6 +74,12 @@ func NewCreateAdvertismentInteractor(
 }
 
 func (i createAdvertismentInteractor) Execute(ctx context.Context, input CreateAdvertismentInput) (CreateAdvertismentOutput, error) {
+	validate := validator.New()
+	err := validate.Struct(input)
+	if err != nil {
+		return CreateAdvertismentOutput{}, fmt.Errorf("error validating create advertisment input: %v", err)
+	}
+
 	categories, err := i.catRepo.FindAllByID(ctx, input.Categories)
 	if err != nil {
 		return CreateAdvertismentOutput{}, fmt.Errorf("can't find categories %s: %v", input.Categories, err)

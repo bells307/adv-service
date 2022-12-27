@@ -40,14 +40,14 @@ type (
 	AdvertismentRepository interface {
 		// Получить объявления
 		Find(ctx context.Context, limit uint, offset uint) ([]Advertisment, error)
-		// Проверить, есть ли объявления с категорией
-		ExistsWithCategory(ctx context.Context, categoryID string) (bool, error)
 		// Получить объявление по ID
 		FindByID(ctx context.Context, id string) (Advertisment, error)
 		// Создать объявление
 		Create(ctx context.Context, adv Advertisment) error
 		// Удалить объявление
 		Delete(ctx context.Context, id string) error
+		// Посчитать количество объявлений с указанной категорией
+		CountByCategory(ctx context.Context, categoryID string) (uint, error)
 	}
 
 	// Объявление

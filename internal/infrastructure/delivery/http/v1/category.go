@@ -40,7 +40,7 @@ func (h *categoryHandler) createCategory(c *gin.Context) {
 	uc := usecase.NewCreateCategoryInteractor(h.catRepo, presenter.NewCreateCategoryPresenter())
 	out, err := uc.Execute(c.Request.Context(), input)
 	if err != nil {
-		err_resp.ErrorResponse(c, err)
+		err_resp.NewErrorResponse(c, err)
 		return
 	}
 
@@ -49,15 +49,19 @@ func (h *categoryHandler) createCategory(c *gin.Context) {
 }
 
 func (h *categoryHandler) deleteCategory(c *gin.Context) {
-	var input usecase.DeleteCategoryInput
-	if err := c.Bind(&input); err != nil {
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.AbortWithStatus(http.StatusBadRequest)
 		return
+	}
+	input := usecase.DeleteCategoryInput{
+		ID: id,
 	}
 
 	uc := usecase.NewDeleteCategoryInteractor(h.advRepo, h.catRepo)
 	err := uc.Execute(c.Request.Context(), input)
 	if err != nil {
-		err_resp.ErrorResponse(c, err)
+		err_resp.NewErrorResponse(c, err)
 		return
 	}
 

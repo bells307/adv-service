@@ -9,9 +9,9 @@ type (
 	// Цена
 	Price struct {
 		// Значение
-		Value float64 `json:"value" bson:"value"`
+		Value float64 `json:"value" bson:"value" example:"1000"`
 		// Валюта
-		Currency Currency `json:"currency" bson:"currency"`
+		Currency Currency `json:"currency" bson:"currency" example:"rub"`
 	}
 )
 

@@ -27,13 +27,13 @@ type (
 	// Объявления на странице
 	FindAllAdvertismentSummaryOutput []struct {
 		// Название объявления
-		Name string `json:"name"`
+		Name string `json:"name" example:"Selling the garage"`
 		// Категория
-		Categories []string `json:"categories"`
+		Categories []string `json:"categories" example:"real estate,auto,land"`
 		// Цена
 		Price domain.Price `json:"price"`
 		// Ссылка на главное фото
-		MainPhotoURL string `json:"mainPhotoURL"`
+		MainPhotoURL string `json:"mainPhotoURL" example:"http://127.0.0.1/storage/main.jpg"`
 	}
 
 	findAllAdvertismentSummaryInteractor struct {

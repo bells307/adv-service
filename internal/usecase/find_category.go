@@ -2,8 +2,10 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bells307/adv-service/internal/domain"
+	"github.com/go-playground/validator/v10"
 )
 
 type (
@@ -15,7 +17,7 @@ type (
 	// Найти категорию
 	FindCategoryInput struct {
 		// Идентификатор категории
-		ID string `json:"id"`
+		ID string `json:"id" validate:"required" example:"e15a4f3f-1549-466e-990a-4b44d10bd3aa"`
 	}
 
 	// Порт выхода презентера
@@ -26,9 +28,9 @@ type (
 	// Найденная категория
 	FindCategoryOutput struct {
 		// Идентификатор
-		ID string `json:"id"`
+		ID string `json:"id" example:"e15a4f3f-1549-466e-990a-4b44d10bd3aa"`
 		// Имя
-		Name string `json:"name"`
+		Name string `json:"name" example:"car"`
 	}
 
 	findCategoryInteractor struct {
@@ -48,6 +50,12 @@ func NewFindCategoryInteractor(
 }
 
 func (i findCategoryInteractor) Execute(ctx context.Context, input FindCategoryInput) (FindCategoryOutput, error) {
+	validate := validator.New()
+	err := validate.Struct(input)
+	if err != nil {
+		return FindCategoryOutput{}, fmt.Errorf("error validating find category input: %v", err)
+	}
+
 	cat, err := i.repo.FindByID(ctx, input.ID)
 	if err != nil {
 		return i.presenter.Output(domain.Category{}), err
