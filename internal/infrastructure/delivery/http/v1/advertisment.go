@@ -37,15 +37,15 @@ func (h *advertismentHandler) Register(g *gin.RouterGroup) {
 	}
 }
 
-//	@Summary	Получить информация об объявлении
-//	@Tags		advertisment
-//	@ID			get-advertisment
-//	@Produce	json
-//	@Param		id	path		string							true	"ID объявления"
-//	@Success	200	{object}	usecase.FindAdvertismentOutput	"Информация об объявлении"
-//	@Failure	404	null		"Объявление не найдено"
-//	@Failure	500	{object}	err_resp.ErrorResponse	"Внутренняя ошибка сервиса"
-//	@Router		/api/v1/advertisment/{id} [get]
+// @Summary	Получить информация об объявлении
+// @Tags		advertisment
+// @ID			get-advertisment
+// @Produce	    json
+// @Param		id	path		string							true	"ID объявления"
+// @Success	200	{object}	usecase.FindAdvertismentOutput	"Информация об объявлении"
+// @Failure	404	{string} string							"Объявление не найдено"
+// @Failure	500	{object}	err_resp.ErrorResponse			"Внутренняя ошибка сервиса"
+// @Router		/api/v1/advertisment/{id} [get]
 func (h *advertismentHandler) getAdvertisment(c *gin.Context) {
 	id := c.Param("id")
 
@@ -67,14 +67,14 @@ func (h *advertismentHandler) getAdvertisment(c *gin.Context) {
 	c.JSON(http.StatusOK, out)
 }
 
-//	@Summary	Получить краткую информация об объявлениях с возможностью запроса по страницам
-//	@Tags		advertisment
-//	@ID			get-advertisment-summary
-//	@Produce	json
-//	@Param		page	query		integer										false	"Номер страницы"
-//	@Success	200		{object}	usecase.FindAllAdvertismentSummaryOutput	"Краткая информация об объявлениях"
-//	@Failure	500		{object}	err_resp.ErrorResponse						"Внутренняя ошибка сервиса"
-//	@Router		/api/v1/advertisment/summary [get]
+// @Summary	Получить краткую информация об объявлениях с возможностью запроса по страницам
+// @Tags		advertisment
+// @ID			get-advertisment-summary
+// @Produce	    json
+// @Param		page	query		integer										false	"Номер страницы"
+// @Success	200		{object}	usecase.FindAllAdvertismentSummaryOutput	"Краткая информация об объявлениях"
+// @Failure	500		{object}	err_resp.ErrorResponse						"Внутренняя ошибка сервиса"
+// @Router		/api/v1/advertisment/summary [get]
 func (h *advertismentHandler) getAdvertismentSummary(c *gin.Context) {
 	var page *uint
 	pageQuery, ok := c.Request.URL.Query()["page"]
@@ -111,16 +111,16 @@ func (h *advertismentHandler) getAdvertismentSummary(c *gin.Context) {
 	c.JSON(http.StatusOK, out)
 }
 
-//	@Summary	Создать объявление
-//	@Tags		advertisment
-//	@ID			create-advertisment
-//	@Accept		json
-//	@Produce	json
-//	@Param		input	body		usecase.CreateAdvertismentInput		true	"Создание объявления"
-//	@Success	200		{object}	usecase.CreateAdvertismentOutput	"Созданное объявление"
-//	@Failure	400		{string}	string								"Ошибка формирования запроса"
-//	@Failure	500		{object}	err_resp.ErrorResponse				"Внутренняя ошибка сервиса"
-//	@Router		/api/v1/advertisment [post]
+// @Summary	Создать объявление
+// @Tags		advertisment
+// @ID			create-advertisment
+// @Accept		json
+// @Produce  	json
+// @Param		input	body		usecase.CreateAdvertismentInput		true	"Создание объявления"
+// @Success	200		{object}	usecase.CreateAdvertismentOutput	"Созданное объявление"
+// @Failure	400		{string}	string								"Ошибка формирования запроса"
+// @Failure	500		{object}	err_resp.ErrorResponse				"Внутренняя ошибка сервиса"
+// @Router		/api/v1/advertisment [post]
 func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 	var input usecase.CreateAdvertismentInput
 	if err := c.Bind(&input); err != nil {
@@ -142,13 +142,13 @@ func (h *advertismentHandler) createAdvertisment(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": out.ID})
 }
 
-//	@Summary	Удалить объявление
-//	@Tags		advertisment
-//	@ID			delete-advertisment
-//	@Param		id	query		string					false	"Идентификатор объявления"
-//	@Success	204	{object}	string					"Удаление произведено успешно"
-//	@Failure	500	{object}	err_resp.ErrorResponse	"Внутренняя ошибка сервиса"
-//	@Router		/api/v1/advertisment/{id} [delete]
+// @Summary	Удалить объявление
+// @Tags		advertisment
+// @ID			delete-advertisment
+// @Param		id	query		string					false	"Идентификатор объявления"
+// @Success	204	{object}	string					"Удаление произведено успешно"
+// @Failure	500	{object}	err_resp.ErrorResponse	"Внутренняя ошибка сервиса"
+// @Router		/api/v1/advertisment/{id} [delete]
 func (h *advertismentHandler) deleteAdvertisment(c *gin.Context) {
 	id := c.Param("id")
 	if len(id) == 0 {
