@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 type (
 	// Валюта
 	Currency string
@@ -21,14 +19,3 @@ const (
 	// Доллар
 	USD Currency = "usd"
 )
-
-// Преобразование string => Currency
-func CurrencyFromString(str string) (Currency, error) {
-	if str == "rub" {
-		return RUB, nil
-	} else if str == "usd" {
-		return USD, nil
-	} else {
-		return Currency(""), fmt.Errorf("currency %s not found", str)
-	}
-}

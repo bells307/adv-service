@@ -1,7 +1,10 @@
 package main
 
 import (
+	advertismentgrpc "github.com/bells307/adv-service/internal/infrastructure/delivery/grpc/advertisment"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 
 	"github.com/bells307/adv-service/cmd/app/config"
 	"github.com/bells307/adv-service/internal/adapter/repository"
@@ -12,8 +15,8 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//	@title	adv-service API
-//	@verion	0.1
+// @title	adv-service API
+// @verion	0.1
 func main() {
 	cfg, err := config.LoadConfig(".env")
 	if err != nil {
@@ -37,5 +40,17 @@ func main() {
 	catHandler := v1.NewCategoryHandler(advRepo, catRepo)
 	catHandler.Register(router.Group("/api"))
 
-	router.Run(cfg.Listen)
+	go func() { router.Run(cfg.HttpListen) }()
+
+	grpcServer := grpc.NewServer()
+	advGrpc := advertismentgrpc.NewAdvertismentHandler(advRepo, catRepo)
+	advGrpc.Register(grpcServer)
+	listener, err := net.Listen("tcp", cfg.GrpcListen)
+	if err != nil {
+		log.Fatalf("can't create grpc listener: %v", err)
+	}
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Fatalf("error while starting grpc serving: %v", err)
+	}
 }

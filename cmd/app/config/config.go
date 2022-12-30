@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	Listen  string                `mapstructure:"LISTEN"`
-	MongoDB mongodb.MongoDBConfig `mapstructure:"MONGODB"`
+	HttpListen string                `mapstructure:"HTTP_LISTEN"`
+	GrpcListen string                `mapstructure:"GRPC_LISTEN"`
+	MongoDB    mongodb.MongoDBConfig `mapstructure:"MONGODB"`
 }
 
 func LoadConfig(path string) (cfg Config, err error) {

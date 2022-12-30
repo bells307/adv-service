@@ -24,7 +24,7 @@ type (
 		// Описание
 		Description string `json:"description" example:"Very big"`
 		// Цена
-		Price domain.Price `json:"price" validate:"required"`
+		Price Price `json:"price" validate:"required"`
 		// Ссылка на главное фото
 		MainPhotoURL string `json:"mainPhotoURL" example:"http://127.0.0.1/storage/main.jpg"`
 		// Ссылки на дополнительные фото
@@ -47,7 +47,7 @@ type (
 		// Описание
 		Description string `json:"description" example:"Very big"`
 		// Цена
-		Price domain.Price `json:"price"`
+		Price Price `json:"price"`
 		// Ссылка на главное фото
 		MainPhotoURL string `json:"mainPhotoURL" example:"http://127.0.0.1/storage/main.jpg"`
 		// Ссылки на дополнительные фото
@@ -85,12 +85,17 @@ func (i createAdvertismentInteractor) Execute(ctx context.Context, input CreateA
 		return CreateAdvertismentOutput{}, fmt.Errorf("can't find categories %s: %v", input.Categories, err)
 	}
 
+	price, err := ValidatePrice(input.Price)
+	if err != nil {
+		return CreateAdvertismentOutput{}, err
+	}
+
 	adv := domain.Advertisment{
 		ID:                  uuid.NewString(),
 		Name:                input.Name,
 		Categories:          categories,
 		Description:         input.Description,
-		Price:               input.Price,
+		Price:               price,
 		MainPhotoURL:        input.MainPhotoURL,
 		AdditionalPhotoURLs: input.AdditionalPhotoURLs,
 	}

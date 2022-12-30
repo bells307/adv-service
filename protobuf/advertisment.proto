@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option go_package = ".;advertisment_grpc";
+
+package advertisment;
+
+service AdvertismentHandler {
+  rpc CreateAdvertisment(CreateAdvertismentInput) returns(CreateAdvertismentOutput);
+}
+
+message CreateAdvertismentInput {
+  string name = 1;
+  repeated string categories = 2;
+  string description = 3;
+  Price price = 4;
+  string mainPhotoURL = 5;
+  repeated string additionalPhotoURLs = 6;
+}
+
+message CreateAdvertismentOutput {
+  string id = 1;
+}
+
+message Price {
+  float value = 1;
+  string currency = 2;
+}
